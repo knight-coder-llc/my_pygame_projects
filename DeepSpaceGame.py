@@ -5,6 +5,65 @@
 import pygame
 import random
 
+#lets create a bullet class to track player and enemy attack
+class bullet:
+    #initialize position, size, and the color to indicate friend or foe
+    def __init__(self, X, Y, color):
+        self.x = X
+        self.y = Y
+        self.width = 4
+        self.height = 10
+        self.color = color
+    #update the position of the bullet in the coordinate plane    
+    def update(self, color):
+        #test if friendly fire or enemy and move in the direction necessary
+        if color == blue:
+            self.y -= 8
+        else:
+            self.y += 8
+            
+#let's create an enemy starship class to produce enemies for the player to combat
+class enemyShip:
+    #initialize
+    def __init__(self):
+        self.x = random.randrange(50, screenWidth - 50)
+        self.y = random.randrange(-50, -5)
+    
+    #enemy entrance to battle (actually cannot do this here, it must be executed in the main)
+    def _enemy(self,x,y):
+       gameScreen.blit(enemycraft, (x,y))
+       
+    #update enemy positions
+    def enemyUpdate(self):
+        
+        #bring the ship into the screen
+        if(self.y < 0 ):
+            self.y += 3
+        
+        rand = random.randrange(1,26)
+        if rand == 25:
+            self.x += random.randrange(-10, 11)
+            self.y += random.randrange(-10, 11)
+            
+        
+        #test boundaries for the corners of the screen first, and then test sides
+        if self.x >= screenWidth - 50 and self.y >= screenHeight - 50:
+            self.x = screenWidth - 50
+            self.y = screenHeight - 50            
+        elif self.x >= screenWidth - 50:
+            self.x = screenWidth - 50                      
+        elif self.x <= 0 and self.y >= screenHeight - 50:
+            self.x = 0
+            self.y = screenHeight - 50           
+        elif self.x <= 0:
+            self.x = 0                   
+        elif self.x <= 0:
+            self.x = 0            
+        elif self.x >= screenWidth - 50:
+            self.x = screenWidth - 50                               
+        elif self.y >= screenHeight//4:
+            self.y = screenHeight//4
+                    
 #start pygame
 pygame.init()
 #define screen resolution
@@ -13,17 +72,22 @@ screenHeight = 600
 #variable to hold the display
 gameScreen = pygame.display.set_mode((screenWidth, screenHeight))
 #set caption
-pygame.display.set_caption("Deep Space")
+pygame.display.set_caption("StarFall Voyager")
 #set up game clock
 clock = pygame.time.Clock()
 #setup colors to be used
 black = (0,0,0)
 white = (255,255,255)
 dark_red = (128,0,0)
+blue = (0,0,255)
 red = (200,0,0)
 green = (0,200,0)
 bright_red = (255,0,0)
 bright_green = (0,255,0)
+
+#bullet list and enemy object list (if needed)
+bulletList = []
+enemySpritesList = []
 
 #build the stars array
 starFall = []
@@ -31,11 +95,12 @@ for q in range(150):
     x = random.randrange(0, 800)
     y = random.randrange(0, 600)
     starFall.append([x,y])
+
     
 #ship width
 ship_width = 50
-starship = pygame.image.load('spaceShip.png')
-enemycraft = pygame.image.load('enemySpaceship.png')
+starship = pygame.image.load('spaceShip.png').convert()
+enemycraft = pygame.image.load('enemySpaceship.png').convert()
 #gamequite function for our quit buttons
 def quitgame():
     pygame.quite()
@@ -44,7 +109,6 @@ def quitgame():
 #move spaceship
 def ship(x,y):
     gameScreen.blit(starship, (x,y))
-    
 #called message_display
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -66,7 +130,6 @@ def button(msg, x, y, w, h, ic, ac, action= None):
     textSurf, textRect = text_objects(msg, smallText)
     textRect.center = (x+(w/2), y+(h/2))
     gameScreen.blit(textSurf, textRect)
-   
 
 #game intro function
 def gameIntro():
@@ -81,10 +144,9 @@ def gameIntro():
                 quit()
         #fill intro screen with black color
         gameScreen.fill(black)
-        
-        #pygame.draw.rect(gameScreen, white,(screenWidth/2, screenHeight/2,50,50))
+       
         #add some buttons to the screen using button function
-        button("Play!",150,450,100,50,green,bright_green,gameLoop) #action will start the game loop
+        button("Play!",150,450,100,50,green,bright_green,gameLoop)
         button("Quit",550, 450,100,50,red,bright_red,quitgame)
         
         #drop stars
@@ -131,6 +193,13 @@ def gameLoop():
                     y_change = -5
                 if event.key == pygame.K_DOWN:                    
                     y_change = 5
+                if event.key == pygame.K_SPACE:
+                   #create bullet object add soundfx
+                   playerBullet = bullet(x,y,blue)
+                   bulletBlast = pygame.mixer.Sound('playerAttack.wav')
+                   bulletBlast.set_volume(0.2)
+                   pygame.mixer.Channel(0).play(bulletBlast)
+                   bulletList.append(playerBullet)
                 #if event.key == pygame.K_p:
                     #pause = True
                     #paused()
@@ -149,29 +218,22 @@ def gameLoop():
         #test boundaries for the corners of the screen first, and then test sides
         if x >= screenWidth - 50 and y >= screenHeight - 50:
             x = screenWidth - 50
-            y = screenHeight - 50
-            
+            y = screenHeight - 50            
         elif x >= screenWidth - 50 and y <= 0:
             x = screenWidth - 50
-            y = 0
-            
+            y = 0            
         elif x <= 0 and y >= screenHeight - 50:
             x = 0
-            y = screenHeight - 50
-            
+            y = screenHeight - 50           
         elif x <= 0 and y <= 0:
             x = 0
-            y = 0
-            
+            y = 0            
         elif x <= 0:
-            x = 0
-            
+            x = 0            
         elif x >= screenWidth - 50:
-            x = screenWidth - 50
-            
+            x = screenWidth - 50            
         elif y <= 0:
-            y = 0
-            
+            y = 0            
         elif y >= screenHeight - 50:
             y = screenHeight - 50
        
@@ -186,10 +248,39 @@ def gameLoop():
             if i[1] > 600:
                 i[1] = random.randrange(-50, -5)
                 i[0] = random.randrange(800)
-        #draw ship to the screen        
-        #move car function
+                
+        #check if enemyships exist
+        if len(enemySpritesList) == 0:
+            numEnemies = 20#random.randrange(1,11)
+            #initialize enemy ship list
+            for i in range(numEnemies):
+                enemySpritesList.append(enemyShip())
+                
+        for i in enemySpritesList:
+            i._enemy(i.x,i.y)
+            rand = random.randrange(1,201)
+            if rand == 100 and i.y >= 0:
+                #create bullet object add soundfx
+                playerBullet = bullet(i.x,i.y,bright_red)
+                bulletBlast = pygame.mixer.Sound('playerAttack.wav')
+                bulletBlast.set_volume(0.2)
+                pygame.mixer.Channel(1).play(bulletBlast)
+                bulletList.append(playerBullet)
+            i.enemyUpdate()
+                
+              
+        #iterate the list for the bullets update and remove as necessary        
+        for i in bulletList:            
+            #test if bullet has reached edge of the screen and remove from the list
+            if i.y < 0 or i.y > screenHeight:
+                bulletList.remove(i)
+            else:
+                pygame.draw.rect(gameScreen,i.color,(i.x + 3, i.y, i.width, i.height))
+                pygame.draw.rect(gameScreen,i.color,(i.x + 40, i.y, i.width, i.height))
+                i.update(i.color)
+       
+        #move ship function and draw to the screen      
         ship(x,y)        
-        #gameScreen.blit(enemycraft, (screenWidth/2, 25)) 
         
         pygame.display.update()
         clock.tick(60)
