@@ -15,11 +15,16 @@ class bullet:
         self.height = 10
         self.color = color
     #update the position of the bullet in the coordinate plane    
-    def update(self, color):
+    def update(self, color, X, Y):
+        
         #test if friendly fire or enemy and move in the direction necessary
         if color == blue:
+            #check for enemy collision here
             self.y -= 8
         else:
+            #detect if there is a collision
+            if self.x + 3 >= X and self.x <= X + 50 and self.y >= Y and self.y <= Y + 50:                
+                    die(X,Y)          
             self.y += 8
             
 #let's create an enemy starship class to produce enemies for the player to combat
@@ -45,7 +50,6 @@ class enemyShip:
             self.x += random.randrange(-10, 11)
             self.y += random.randrange(-10, 11)
             
-        
         #test boundaries for the corners of the screen first, and then test sides
         if self.x >= screenWidth - 50 and self.y >= screenHeight - 50:
             self.x = screenWidth - 50
@@ -101,9 +105,10 @@ for q in range(150):
 ship_width = 50
 starship = pygame.image.load('spaceShip.png').convert()
 enemycraft = pygame.image.load('enemySpaceship.png').convert()
+explode = pygame.image.load('flame.png').convert()
 #gamequite function for our quit buttons
 def quitgame():
-    pygame.quite()
+    pygame.quit()
     quit()
 
 #move spaceship
@@ -130,7 +135,35 @@ def button(msg, x, y, w, h, ic, ac, action= None):
     textSurf, textRect = text_objects(msg, smallText)
     textRect.center = (x+(w/2), y+(h/2))
     gameScreen.blit(textSurf, textRect)
-
+#end game function
+def die(x,y):
+    
+    gameOver = True
+    while gameOver:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        #fill intro screen with black color
+        gameScreen.fill(black)
+        gameScreen.blit(explode,(x,y))
+        
+        #add some buttons to the screen using button function
+        button("Play!",150,450,100,50,green,bright_green,gameLoop)
+        button("Quit",550, 450,100,50,red,bright_red,quitgame)
+                
+        #drop stars
+        for i in starFall:
+            i[1]+= 1
+            
+            pygame.draw.circle(gameScreen, white, i, 2)
+            if i[1] > 600:
+                i[1] = random.randrange(-50, -5)
+                i[0] = random.randrange(800)
+        
+        pygame.display.update()
+        clock.tick(60)
+   
 #game intro function
 def gameIntro():
     intro = True
@@ -251,7 +284,7 @@ def gameLoop():
                 
         #check if enemyships exist
         if len(enemySpritesList) == 0:
-            numEnemies = 20#random.randrange(1,11)
+            numEnemies = random.randrange(1,21)
             #initialize enemy ship list
             for i in range(numEnemies):
                 enemySpritesList.append(enemyShip())
@@ -266,18 +299,22 @@ def gameLoop():
                 bulletBlast.set_volume(0.2)
                 pygame.mixer.Channel(1).play(bulletBlast)
                 bulletList.append(playerBullet)
+                
+                
             i.enemyUpdate()
                 
-              
+        print(x)     
         #iterate the list for the bullets update and remove as necessary        
-        for i in bulletList:            
+        for i in bulletList:  
+               
             #test if bullet has reached edge of the screen and remove from the list
-            if i.y < 0 or i.y > screenHeight:
+            if i.y < 0 or i.y > screenHeight:               
                 bulletList.remove(i)
+            
             else:
                 pygame.draw.rect(gameScreen,i.color,(i.x + 3, i.y, i.width, i.height))
                 pygame.draw.rect(gameScreen,i.color,(i.x + 40, i.y, i.width, i.height))
-                i.update(i.color)
+                i.update(i.color, x, y)
        
         #move ship function and draw to the screen      
         ship(x,y)        
