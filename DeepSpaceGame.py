@@ -27,17 +27,14 @@ class bullet:
             if self.x + 3 >= X and self.x <= X + 50 and self.y >= Y and self.y <= Y + 50:                
                     die(X,Y)          
             self.y += 8
-
-#TODO create enemy collision die() function
-#steps: #check enemy ship array to see if there are remaining ships
-        #if ships remaining remove eleminated ship and continue the onslaught, otherwise regenerate enemy ships
             
-#this spritesSheet class has not been implemented yet
+#TODO this spritesSheet class has not been implemented
 class SpriteSheet:
     #initialize spritesheet
     def __init__(self, columns, rows):
         self.columns = columns
-        self.rows = rows            
+        self.rows = rows           
+        
 #let's create an enemy starship class to produce enemies for the player to combat
 class enemyShip:
     #initialize
