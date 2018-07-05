@@ -16,17 +16,28 @@ class bullet:
         self.color = color
     #update the position of the bullet in the coordinate plane    
     def update(self, color, X, Y):
-        
+        print(self.x)
         #test if friendly fire or enemy and move in the direction necessary
         if color == blue:
             #check for enemy collision here
+            enemyDie(self.x, self.y)
             self.y -= 8
         else:
             #detect if there is a collision
             if self.x + 3 >= X and self.x <= X + 50 and self.y >= Y and self.y <= Y + 50:                
                     die(X,Y)          
             self.y += 8
+
+#TODO create enemy collision die() function
+#steps: #check enemy ship array to see if there are remaining ships
+        #if ships remaining remove eleminated ship and continue the onslaught, otherwise regenerate enemy ships
             
+#this spritesSheet class has not been implemented yet
+class SpriteSheet:
+    #initialize spritesheet
+    def __init__(self, columns, rows):
+        self.columns = columns
+        self.rows = rows            
 #let's create an enemy starship class to produce enemies for the player to combat
 class enemyShip:
     #initialize
@@ -103,8 +114,8 @@ for q in range(150):
     
 #ship width
 ship_width = 50
-starship = pygame.image.load('spaceShip.png').convert()
-enemycraft = pygame.image.load('enemySpaceship.png').convert()
+starship = pygame.image.load('spaceShip.png')
+enemycraft = pygame.image.load('enemySpaceship.png')
 explode = pygame.image.load('flame.png').convert()
 #gamequite function for our quit buttons
 def quitgame():
@@ -158,12 +169,20 @@ def die(x,y):
             
             pygame.draw.circle(gameScreen, white, i, 2)
             if i[1] > 600:
-                i[1] = random.randrange(-50, -5)
-                i[0] = random.randrange(800)
+                i[1] = random.randrange(-50, -5) #screen height
+                i[0] = random.randrange(800) #screen width
         
-        pygame.display.update()
+        pygame.display.flip()
         clock.tick(60)
-   
+
+def enemyDie(x, y):
+    print('did we check for enemy deaths')
+    #loop through list find destroyed enemy craft, explode, and remove from existence
+    for i in enemySpritesList:
+        if x + 3 >= i.x and x <= i.x + 50 and y >= i.y and y <= i.y + 50:
+            gameScreen.blit(explode,(i.x,i.y))
+            enemySpritesList.remove(i)
+            
 #game intro function
 def gameIntro():
     intro = True
@@ -303,7 +322,7 @@ def gameLoop():
                 
             i.enemyUpdate()
                 
-        print(x)     
+        #print(x)     
         #iterate the list for the bullets update and remove as necessary        
         for i in bulletList:  
                
